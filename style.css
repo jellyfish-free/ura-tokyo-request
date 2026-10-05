@@ -363,6 +363,13 @@ button {
     );
 }
 
+/* 掲示板画像だけアップ */
+.daily-image img {
+  transform: scale(2);
+}
+.broker-card:hover .daily-image img {
+  transform: scale(2.2);
+}
 
 /* ==========================================
    情報屋
@@ -376,7 +383,6 @@ button {
       #090909
     );
 }
-
 
 /*
   情報屋画像の人物の顔が
@@ -777,4 +783,28 @@ button {
     letter-spacing: 1px;
   }
 
+}
+
+/* ==========================================
+   TOP CITYSCAPE
+========================================== */
+
+.top-cityscape {
+  width: min(100%, 900px);
+
+  margin:
+    55px auto -20px;
+
+  overflow: hidden;
+
+  pointer-events: none;
+}
+
+.top-cityscape img {
+  display: block;
+
+  width: 100%;
+  height: auto;
+
+  opacity: 0.1;
 }
