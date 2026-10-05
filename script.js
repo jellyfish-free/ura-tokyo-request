@@ -7,18 +7,29 @@
      TEST MODE
 
      true
-     → テストモード
-     → 1日1回制限なし
-     → 何度でも抽選可能
-     → 依頼被りなしは有効
+     ----------------
+     テストモード
+     ・1日2回制限なし
+     ・何度でも抽選可能
+     ・依頼被りなし
+     ・履歴保存あり
 
      false
-     → 本番モード
-     → 1日1回
-     → 日本時間0時リセット
+     ----------------
+     本番モード
+     ・1日2回まで
+     ・日本時間0:00で翌日扱い
+     ・依頼被りなし
   ========================================== */
 
   const TEST_MODE = true;
+
+
+  /* ==========================================
+     1日の最大抽選回数
+  ========================================== */
+
+  const MAX_DRAWS_PER_DAY = 2;
 
 
   /* ==========================================
@@ -28,97 +39,85 @@
   const screens =
     document.querySelectorAll(".screen");
 
-
   const startButton =
     document.querySelector("#start-button");
 
-
-  const brokerCards =
+  const sourceCards =
     document.querySelectorAll(".broker-card");
-
 
   const historyButtonStart =
     document.querySelector("#history-button-start");
 
-
   const historyButton =
     document.querySelector("#history-button");
-
 
   const resultHistoryButton =
     document.querySelector("#result-history-button");
 
-
   const lockedHistoryButton =
     document.querySelector("#locked-history-button");
-
 
   const backButton =
     document.querySelector("#back-button");
 
-
   const brokerBackButton =
     document.querySelector("#broker-back-button");
-
 
   const lockedBackButton =
     document.querySelector("#locked-back-button");
 
+  const resultHomeButton =
+    document.querySelector("#result-home-button");
 
-  const testNextButton =
-    document.querySelector("#test-next-button");
-
+  const nextRequestButton =
+    document.querySelector("#next-request-button");
 
   const resetButton =
     document.querySelector("#reset-button");
 
-
   const testPanel =
     document.querySelector("#test-panel");
-
 
   const todayMessage =
     document.querySelector("#today-message");
 
+  const dailyStatus =
+    document.querySelector("#daily-status");
+
+  const brokerDailyStatus =
+    document.querySelector("#broker-daily-status");
 
   const resultCategory =
     document.querySelector("#result-category");
 
-
   const resultNumber =
     document.querySelector("#result-number");
-
 
   const resultTitle =
     document.querySelector("#result-title");
 
-
   const resultDescription =
     document.querySelector("#result-description");
-
 
   const resultClient =
     document.querySelector("#result-client");
 
-
   const resultReward =
     document.querySelector("#result-reward");
-
 
   const historyList =
     document.querySelector("#history-list");
 
 
   /* ==========================================
-     STORAGE KEY
+     STORAGE
   ========================================== */
 
   const HISTORY_KEY =
     "uraTokyoRequestHistory";
 
-
-  const LAST_DRAW_KEY =
-    "uraTokyoLastDraw";
+  const DAILY_DRAW_KEY =
+    "uraTokyoDailyDraw";
 
 
   /* ==========================================
@@ -127,36 +126,41 @@
 
   function initialize() {
 
-    /*
-      TEST_MODEでなければ
-      テスト用UIを消す
-    */
+    if (
+      !window.REQUEST_DATA ||
+      !Array.isArray(window.REQUEST_DATA)
+    ) {
 
-    if (!TEST_MODE) {
+      console.error(
+        "REQUEST_DATA が読み込まれていません。"
+      );
+
+      alert(
+        "依頼データの読み込みに失敗しました。"
+      );
+
+      return;
+    }
+
+
+    if (TEST_MODE) {
+
+      if (testPanel) {
+        testPanel.style.display = "block";
+      }
+
+    }
+
+    else {
 
       if (testPanel) {
         testPanel.style.display = "none";
       }
 
-
-      if (testNextButton) {
-        testNextButton.style.display = "none";
-      }
-
     }
 
 
-    /*
-      TEST_MODEの場合
-      結果画面の説明変更
-    */
-
-    if (TEST_MODE && todayMessage) {
-
-      todayMessage.innerHTML =
-        "TEST MODE<br>1日1回制限を解除しています。";
-
-    }
+    updateDailyStatus();
 
   }
 
@@ -167,13 +171,15 @@
 
   function showScreen(id) {
 
-    screens.forEach(screen => {
+    screens.forEach(
+      screen => {
 
-      screen.classList.remove(
-        "active"
-      );
+        screen.classList.remove(
+          "active"
+        );
 
-    });
+      }
+    );
 
 
     const target =
@@ -190,39 +196,56 @@
 
     }
 
+
+    updateDailyStatus();
+
   }
 
 
   /* ==========================================
      日本時間の日付
-
-     例:
-     2026-10-06
   ========================================== */
 
   function getJapanDate() {
 
-    const formatter =
+    const parts =
       new Intl.DateTimeFormat(
-        "en-CA",
+        "ja-JP",
         {
-          timeZone:
-            "Asia/Tokyo",
+          timeZone: "Asia/Tokyo",
 
-          year:
-            "numeric",
-
-          month:
-            "2-digit",
-
-          day:
-            "2-digit"
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
         }
+      ).formatToParts(
+        new Date()
       );
 
 
-    return formatter.format(
-      new Date()
+    const values = {};
+
+
+    parts.forEach(
+      part => {
+
+        if (
+          part.type !== "literal"
+        ) {
+
+          values[part.type] =
+            part.value;
+
+        }
+
+      }
+    );
+
+
+    return (
+      `${values.year}-` +
+      `${values.month}-` +
+      `${values.day}`
     );
 
   }
@@ -237,26 +260,15 @@
     return new Intl.DateTimeFormat(
       "ja-JP",
       {
-        timeZone:
-          "Asia/Tokyo",
+        timeZone: "Asia/Tokyo",
 
-        year:
-          "numeric",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
 
-        month:
-          "2-digit",
-
-        day:
-          "2-digit",
-
-        hour:
-          "2-digit",
-
-        minute:
-          "2-digit",
-
-        second:
-          "2-digit"
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
       }
     ).format(
       new Date()
@@ -280,13 +292,20 @@
 
 
       if (!data) {
-
         return [];
-
       }
 
 
-      return JSON.parse(data);
+      const parsed =
+        JSON.parse(data);
+
+
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+
+
+      return parsed;
 
     }
 
@@ -296,7 +315,6 @@
         "履歴の読み込みに失敗しました。",
         error
       );
-
 
       return [];
 
@@ -320,22 +338,13 @@
 
 
   /* ==========================================
-     今日すでに受け取ったか
+     今日の抽選回数
   ========================================== */
 
-  function hasDrawnToday() {
-
-    /*
-      TEST_MODEなら
-      必ずfalse
-
-      = 何回でも引ける
-    */
+  function getTodayDrawCount() {
 
     if (TEST_MODE) {
-
-      return false;
-
+      return 0;
     }
 
 
@@ -343,23 +352,178 @@
       getJapanDate();
 
 
-    const lastDraw =
-      localStorage.getItem(
-        LAST_DRAW_KEY
+    try {
+
+      const raw =
+        localStorage.getItem(
+          DAILY_DRAW_KEY
+        );
+
+
+      if (!raw) {
+        return 0;
+      }
+
+
+      const data =
+        JSON.parse(raw);
+
+
+      if (
+        !data ||
+        data.date !== today
+      ) {
+
+        return 0;
+      }
+
+
+      const count =
+        Number(data.count);
+
+
+      if (
+        !Number.isFinite(count) ||
+        count < 0
+      ) {
+
+        return 0;
+      }
+
+
+      return count;
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "抽選回数の読み込みに失敗しました。",
+        error
       );
 
+      return 0;
 
-    return lastDraw === today;
+    }
 
   }
 
 
   /* ==========================================
-     未取得依頼を取得
+     抽選回数を増やす
+  ========================================== */
 
-     履歴に存在するIDは除外する
-     ↓
-     同じ依頼は二度と出ない
+  function incrementTodayDrawCount() {
+
+    if (TEST_MODE) {
+      return;
+    }
+
+
+    const today =
+      getJapanDate();
+
+
+    const currentCount =
+      getTodayDrawCount();
+
+
+    const data = {
+
+      date: today,
+
+      count:
+        currentCount + 1
+
+    };
+
+
+    localStorage.setItem(
+      DAILY_DRAW_KEY,
+      JSON.stringify(data)
+    );
+
+  }
+
+
+  /* ==========================================
+     上限確認
+  ========================================== */
+
+  function hasReachedDailyLimit() {
+
+    if (TEST_MODE) {
+      return false;
+    }
+
+
+    return (
+      getTodayDrawCount() >=
+      MAX_DRAWS_PER_DAY
+    );
+
+  }
+
+
+  /* ==========================================
+     今日の状態表示
+  ========================================== */
+
+  function updateDailyStatus() {
+
+    if (TEST_MODE) {
+
+      if (dailyStatus) {
+
+        dailyStatus.textContent =
+          "TEST MODE｜抽選回数制限なし";
+
+      }
+
+
+      if (brokerDailyStatus) {
+
+        brokerDailyStatus.textContent =
+          "TEST MODE｜抽選回数制限なし";
+
+      }
+
+
+      return;
+    }
+
+
+    const count =
+      Math.min(
+        getTodayDrawCount(),
+        MAX_DRAWS_PER_DAY
+      );
+
+
+    const text =
+      `本日の依頼　${count} / ${MAX_DRAWS_PER_DAY}`;
+
+
+    if (dailyStatus) {
+
+      dailyStatus.textContent =
+        text;
+
+    }
+
+
+    if (brokerDailyStatus) {
+
+      brokerDailyStatus.textContent =
+        text;
+
+    }
+
+  }
+
+
+  /* ==========================================
+     未取得依頼
   ========================================== */
 
   function getAvailableRequests(type) {
@@ -391,30 +555,22 @@
 
 
   /* ==========================================
-     ランダム抽選
+     抽選
   ========================================== */
 
   function drawRequest(type) {
 
-    /*
-      本番時の
-      1日1回チェック
-    */
-
-    if (hasDrawnToday()) {
+    if (
+      hasReachedDailyLimit()
+    ) {
 
       showScreen(
         "locked-screen"
       );
 
       return;
-
     }
 
-
-    /*
-      未取得依頼
-    */
 
     const available =
       getAvailableRequests(
@@ -422,24 +578,23 @@
       );
 
 
-    /*
-      全部取得済み
-    */
+    if (
+      available.length === 0
+    ) {
 
-    if (available.length === 0) {
+      const sourceName =
+        type === "daily"
+          ? "掲示板"
+          : "情報屋";
+
 
       alert(
-        "この情報屋から受け取れる依頼は、すべて取得済みです。"
+        `${sourceName}から受け取れる依頼は、すべて取得済みです。`
       );
 
       return;
-
     }
 
-
-    /*
-      ランダム抽選
-    */
 
     const randomIndex =
       Math.floor(
@@ -452,17 +607,9 @@
       available[randomIndex];
 
 
-    /*
-      履歴取得
-    */
-
     const history =
       getHistory();
 
-
-    /*
-      履歴データ作成
-    */
 
     const historyItem = {
 
@@ -477,10 +624,6 @@
     };
 
 
-    /*
-      履歴追加
-    */
-
     history.push(
       historyItem
     );
@@ -491,23 +634,8 @@
     );
 
 
-    /*
-      最終抽選日を保存
+    incrementTodayDrawCount();
 
-      TEST_MODEでも保存しておく。
-      本番へ切り替えたときにも
-      データ構造が変わらないため。
-    */
-
-    localStorage.setItem(
-      LAST_DRAW_KEY,
-      getJapanDate()
-    );
-
-
-    /*
-      結果表示
-    */
 
     displayResult(
       selected
@@ -522,71 +650,42 @@
 
   function displayResult(request) {
 
-    /*
-      CATEGORY
-    */
-
     if (
-      request.type ===
-      "daily"
+      request.type === "daily"
     ) {
 
       resultCategory.textContent =
-        "DAILY";
+        "BOARD / DAILY";
 
     }
 
     else {
 
       resultCategory.textContent =
-        "UNDERGROUND";
+        "BROKER / UNDERGROUND";
 
     }
 
 
-    /*
-      REQUEST ID
-    */
-
     resultNumber.textContent =
-      `REQUEST #${request.id}`;
+      `REQUEST ${request.id}`;
 
-
-    /*
-      TITLE
-    */
 
     resultTitle.textContent =
       request.title;
 
 
-    /*
-      DESCRIPTION
-    */
-
     resultDescription.textContent =
       request.description;
 
-
-    /*
-      CLIENT
-    */
 
     resultClient.textContent =
       request.client;
 
 
-    /*
-      REWARD
-    */
-
     resultReward.textContent =
       request.reward;
 
-
-    /*
-      カテゴリ別デザイン
-    */
 
     const card =
       document.querySelector(
@@ -594,35 +693,38 @@
       );
 
 
-    card.classList.remove(
-      "daily-result",
-      "underground-result"
-    );
+    if (card) {
 
-
-    if (
-      request.type ===
-      "underground"
-    ) {
-
-      card.classList.add(
+      card.classList.remove(
+        "daily-result",
         "underground-result"
       );
 
+
+      if (
+        request.type ===
+        "underground"
+      ) {
+
+        card.classList.add(
+          "underground-result"
+        );
+
+      }
+
+      else {
+
+        card.classList.add(
+          "daily-result"
+        );
+
+      }
+
     }
 
-    else {
 
-      card.classList.add(
-        "daily-result"
-      );
+    updateResultMessage();
 
-    }
-
-
-    /*
-      結果画面
-    */
 
     showScreen(
       "result-screen"
@@ -632,7 +734,76 @@
 
 
   /* ==========================================
-     履歴表示
+     結果メッセージ
+  ========================================== */
+
+  function updateResultMessage() {
+
+    if (TEST_MODE) {
+
+      todayMessage.innerHTML =
+        "TEST MODE<br>" +
+        "抽選回数制限を解除しています。";
+
+
+      nextRequestButton.style.display =
+        "inline-block";
+
+
+      nextRequestButton.textContent =
+        "TEST：もう一件引く";
+
+
+      return;
+    }
+
+
+    const count =
+      getTodayDrawCount();
+
+
+    if (
+      count <
+      MAX_DRAWS_PER_DAY
+    ) {
+
+      const remaining =
+        MAX_DRAWS_PER_DAY -
+        count;
+
+
+      todayMessage.innerHTML =
+        `本日 ${count} / ${MAX_DRAWS_PER_DAY}件の依頼を受け取りました。<br>` +
+        `あと${remaining}件受け取れます。`;
+
+
+      nextRequestButton.style.display =
+        "inline-block";
+
+
+      nextRequestButton.textContent =
+        "もう一件依頼を受ける";
+
+    }
+
+    else {
+
+      todayMessage.innerHTML =
+        `本日 ${MAX_DRAWS_PER_DAY} / ${MAX_DRAWS_PER_DAY}件の依頼を受け取りました。<br>` +
+        "本日の受付は終了しました。<br>" +
+        "次の依頼は日本時間 0:00 以降に受け取れます。";
+
+
+      nextRequestButton.style.display =
+        "none";
+
+    }
+
+  }
+
+
+  /* ==========================================
+     履歴
   ========================================== */
 
   function displayHistory() {
@@ -644,10 +815,6 @@
     historyList.innerHTML =
       "";
 
-
-    /*
-      履歴なし
-    */
 
     if (
       history.length === 0
@@ -666,13 +833,8 @@
 
 
       return;
-
     }
 
-
-    /*
-      新しい順に並べる
-    */
 
     const reversed =
       [...history].reverse();
@@ -693,12 +855,11 @@
 
         const category =
           item.type === "daily"
-            ? "DAILY"
-            : "UNDERGROUND";
+            ? "BOARD / DAILY"
+            : "BROKER / UNDERGROUND";
 
 
         element.innerHTML = `
-
           <div class="history-top">
 
             <span class="history-category">
@@ -706,36 +867,42 @@
             </span>
 
             <span class="history-date">
-              ${escapeHTML(item.receivedAt)}
+              ${escapeHTML(
+                item.receivedAt
+              )}
             </span>
 
           </div>
 
-
           <h3>
-            ${escapeHTML(item.title)}
+            ${escapeHTML(
+              item.title
+            )}
           </h3>
 
-
           <p>
-            ${escapeHTML(item.description)}
+            ${escapeHTML(
+              item.description
+            )}
           </p>
-
 
           <div class="history-bottom">
 
             <span>
               CLIENT：
-              ${escapeHTML(item.client)}
+              ${escapeHTML(
+                item.client
+              )}
             </span>
 
             <span>
               REWARD：
-              ${escapeHTML(item.reward)}
+              ${escapeHTML(
+                item.reward
+              )}
             </span>
 
           </div>
-
         `;
 
 
@@ -791,20 +958,13 @@
 
 
   /* ==========================================
-     テストデータリセット
+     TESTデータリセット
   ========================================== */
 
   function resetTestData() {
 
-    /*
-      TEST_MODE以外では
-      実行させない
-    */
-
     if (!TEST_MODE) {
-
       return;
-
     }
 
 
@@ -815,33 +975,26 @@
 
 
     if (!confirmed) {
-
       return;
-
     }
 
-
-    /*
-      履歴削除
-    */
 
     localStorage.removeItem(
       HISTORY_KEY
     );
 
 
-    /*
-      最終抽選日削除
-    */
-
     localStorage.removeItem(
-      LAST_DRAW_KEY
+      DAILY_DRAW_KEY
     );
 
 
     alert(
       "テストデータをリセットしました。"
     );
+
+
+    updateDailyStatus();
 
 
     showScreen(
@@ -859,22 +1012,15 @@
     "click",
     () => {
 
-      /*
-        本番モードで
-        本日受取済みの場合
-      */
-
       if (
-        hasDrawnToday()
+        hasReachedDailyLimit()
       ) {
 
         showScreen(
           "locked-screen"
         );
 
-
         return;
-
       }
 
 
@@ -887,10 +1033,10 @@
 
 
   /* ==========================================
-     情報屋選択
+     掲示板 / 情報屋
   ========================================== */
 
-  brokerCards.forEach(
+  sourceCards.forEach(
     card => {
 
       card.addEventListener(
@@ -913,17 +1059,32 @@
 
 
   /* ==========================================
-     TEST：もう一度引く
+     もう一件
   ========================================== */
 
-  testNextButton.addEventListener(
+  nextRequestButton.addEventListener(
     "click",
     () => {
 
-      if (!TEST_MODE) {
+      if (TEST_MODE) {
+
+        showScreen(
+          "broker-screen"
+        );
 
         return;
+      }
 
+
+      if (
+        hasReachedDailyLimit()
+      ) {
+
+        showScreen(
+          "locked-screen"
+        );
+
+        return;
       }
 
 
@@ -936,7 +1097,7 @@
 
 
   /* ==========================================
-     TEST：データリセット
+     RESET
   ========================================== */
 
   resetButton.addEventListener(
@@ -946,7 +1107,7 @@
 
 
   /* ==========================================
-     履歴ボタン
+     HISTORY
   ========================================== */
 
   historyButtonStart.addEventListener(
@@ -974,7 +1135,7 @@
 
 
   /* ==========================================
-     BACK
+     BACK / TOP
   ========================================== */
 
   backButton.addEventListener(
@@ -1013,8 +1174,20 @@
   );
 
 
+  resultHomeButton.addEventListener(
+    "click",
+    () => {
+
+      showScreen(
+        "start-screen"
+      );
+
+    }
+  );
+
+
   /* ==========================================
-     起動
+     START
   ========================================== */
 
   initialize();
