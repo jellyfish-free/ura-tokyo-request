@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,13 +20,20 @@
     <section id="start-screen" class="screen active">
 
       <div class="title-area">
-        <p class="sub-title">URA TOKYO CITY</p>
-        <h1>INFORMATION BROKER</h1>
+
+        <p class="sub-title">
+          URA TOKYO CITY
+        </p>
+
+        <h1>
+          INFORMATION BROKER
+        </h1>
 
         <p class="intro">
           裏トーキョーシティでは、<br>
           今日も誰かが「仕事」を探している。
         </p>
+
       </div>
 
       <button id="start-button" class="main-button">
@@ -36,17 +44,34 @@
         受け取り履歴
       </button>
 
+      <!-- TEST_MODE時だけ表示 -->
+      <div id="test-panel" class="test-panel">
+
+        <p>
+          TEST MODE
+        </p>
+
+        <button id="reset-button" class="reset-button">
+          テストデータをリセット
+        </button>
+
+      </div>
+
     </section>
 
 
     <!-- =========================
-         情報屋選択
+         情報屋選択画面
     ========================== -->
     <section id="broker-screen" class="screen">
 
-      <p class="screen-label">SELECT BROKER</p>
+      <p class="screen-label">
+        SELECT BROKER
+      </p>
 
-      <h2>情報屋を選択</h2>
+      <h2>
+        情報屋を選択
+      </h2>
 
       <p class="description">
         どちらから情報を買う？
@@ -55,7 +80,7 @@
 
       <div class="broker-container">
 
-        <!-- 左：日常 -->
+        <!-- 左：日常系 -->
         <button
           class="broker-card"
           data-type="daily"
@@ -66,8 +91,15 @@
           </div>
 
           <div class="broker-info">
-            <span class="broker-number">01</span>
-            <h3>情報屋</h3>
+
+            <span class="broker-number">
+              01
+            </span>
+
+            <h3>
+              情報屋
+            </h3>
+
             <p>
               日常に転がっている、<br>
               少し変わった依頼。
@@ -76,12 +108,13 @@
             <span class="category">
               DAILY
             </span>
+
           </div>
 
         </button>
 
 
-        <!-- 右：アングラ -->
+        <!-- 右：アングラ系 -->
         <button
           class="broker-card underground"
           data-type="underground"
@@ -92,8 +125,15 @@
           </div>
 
           <div class="broker-info">
-            <span class="broker-number">02</span>
-            <h3>情報屋</h3>
+
+            <span class="broker-number">
+              02
+            </span>
+
+            <h3>
+              情報屋
+            </h3>
+
             <p>
               裏側に踏み込む、<br>
               少々危険な依頼。
@@ -102,6 +142,7 @@
             <span class="category">
               UNDERGROUND
             </span>
+
           </div>
 
         </button>
@@ -113,17 +154,22 @@
         受け取り履歴
       </button>
 
+      <button id="broker-back-button" class="text-button">
+        BACK
+      </button>
+
     </section>
 
 
     <!-- =========================
-         依頼結果
+         依頼結果画面
     ========================== -->
     <section id="result-screen" class="screen">
 
       <p class="screen-label">
         REQUEST RECEIVED
       </p>
+
 
       <div class="request-card">
 
@@ -153,13 +199,28 @@
         <div class="request-meta">
 
           <div>
-            <span class="meta-label">CLIENT</span>
-            <span id="result-client">---</span>
+
+            <span class="meta-label">
+              CLIENT
+            </span>
+
+            <span id="result-client">
+              ---
+            </span>
+
           </div>
 
+
           <div>
-            <span class="meta-label">REWARD</span>
-            <span id="result-reward">---</span>
+
+            <span class="meta-label">
+              REWARD
+            </span>
+
+            <span id="result-reward">
+              ---
+            </span>
+
           </div>
 
         </div>
@@ -167,13 +228,25 @@
       </div>
 
 
-      <p class="today-message">
+      <p id="today-message" class="today-message">
         本日の依頼を受け取りました。<br>
         次の依頼は日本時間 0:00 以降に受け取れます。
       </p>
 
 
-      <button id="result-history-button" class="main-button">
+      <!-- TEST_MODE時に表示 -->
+      <button
+        id="test-next-button"
+        class="main-button test-only"
+      >
+        TEST：もう一度引く
+      </button>
+
+
+      <button
+        id="result-history-button"
+        class="text-button"
+      >
         受け取り履歴
       </button>
 
@@ -181,7 +254,7 @@
 
 
     <!-- =========================
-         本日受取済み
+         本日受取済み画面
     ========================== -->
     <section id="locked-screen" class="screen">
 
@@ -189,22 +262,36 @@
         CLOSED
       </p>
 
-      <h2>本日の依頼は受取済みです。</h2>
+      <h2>
+        本日の依頼は受取済みです。
+      </h2>
 
       <p class="description">
         次の依頼は<br>
         日本時間 0:00 以降に受け取れます。
       </p>
 
-      <button id="locked-history-button" class="main-button">
+
+      <button
+        id="locked-history-button"
+        class="main-button"
+      >
         受け取り履歴
+      </button>
+
+
+      <button
+        id="locked-back-button"
+        class="text-button"
+      >
+        BACK
       </button>
 
     </section>
 
 
     <!-- =========================
-         履歴
+         履歴画面
     ========================== -->
     <section id="history-screen" class="screen">
 
@@ -212,12 +299,19 @@
         REQUEST LOG
       </p>
 
-      <h2>受け取り履歴</h2>
+      <h2>
+        受け取り履歴
+      </h2>
+
 
       <div id="history-list">
       </div>
 
-      <button id="back-button" class="main-button">
+
+      <button
+        id="back-button"
+        class="main-button"
+      >
         BACK
       </button>
 
@@ -233,4 +327,5 @@
   <script src="script.js"></script>
 
 </body>
+
 </html>
