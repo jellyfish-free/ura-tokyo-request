@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>裏トーキョーシティ｜情報屋</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="app">
+
+    <!-- =========================
+         START画面
+    ========================== -->
+    <section id="start-screen" class="screen active">
+
+      <div class="title-area">
+        <p class="sub-title">URA TOKYO CITY</p>
+        <h1>INFORMATION BROKER</h1>
+
+        <p class="intro">
+          裏トーキョーシティでは、<br>
+          今日も誰かが「仕事」を探している。
+        </p>
+      </div>
+
+      <button id="start-button" class="main-button">
+        START
+      </button>
+
+      <button id="history-button-start" class="text-button">
+        受け取り履歴
+      </button>
+
+    </section>
+
+
+    <!-- =========================
+         情報屋選択
+    ========================== -->
+    <section id="broker-screen" class="screen">
+
+      <p class="screen-label">SELECT BROKER</p>
+
+      <h2>情報屋を選択</h2>
+
+      <p class="description">
+        どちらから情報を買う？
+      </p>
+
+
+      <div class="broker-container">
+
+        <!-- 左：日常 -->
+        <button
+          class="broker-card"
+          data-type="daily"
+        >
+
+          <div class="broker-image daily-image">
+            LEFT
+          </div>
+
+          <div class="broker-info">
+            <span class="broker-number">01</span>
+            <h3>情報屋</h3>
+            <p>
+              日常に転がっている、<br>
+              少し変わった依頼。
+            </p>
+
+            <span class="category">
+              DAILY
+            </span>
+          </div>
+
+        </button>
+
+
+        <!-- 右：アングラ -->
+        <button
+          class="broker-card underground"
+          data-type="underground"
+        >
+
+          <div class="broker-image underground-image">
+            RIGHT
+          </div>
+
+          <div class="broker-info">
+            <span class="broker-number">02</span>
+            <h3>情報屋</h3>
+            <p>
+              裏側に踏み込む、<br>
+              少々危険な依頼。
+            </p>
+
+            <span class="category">
+              UNDERGROUND
+            </span>
+          </div>
+
+        </button>
+
+      </div>
+
+
+      <button id="history-button" class="text-button">
+        受け取り履歴
+      </button>
+
+    </section>
+
+
+    <!-- =========================
+         依頼結果
+    ========================== -->
+    <section id="result-screen" class="screen">
+
+      <p class="screen-label">
+        REQUEST RECEIVED
+      </p>
+
+      <div class="request-card">
+
+        <div class="request-header">
+
+          <span id="result-category">
+            DAILY
+          </span>
+
+          <span id="result-number">
+            REQUEST #001
+          </span>
+
+        </div>
+
+
+        <h2 id="result-title">
+          依頼タイトル
+        </h2>
+
+
+        <p id="result-description">
+          依頼内容
+        </p>
+
+
+        <div class="request-meta">
+
+          <div>
+            <span class="meta-label">CLIENT</span>
+            <span id="result-client">---</span>
+          </div>
+
+          <div>
+            <span class="meta-label">REWARD</span>
+            <span id="result-reward">---</span>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <p class="today-message">
+        本日の依頼を受け取りました。<br>
+        次の依頼は日本時間 0:00 以降に受け取れます。
+      </p>
+
+
+      <button id="result-history-button" class="main-button">
+        受け取り履歴
+      </button>
+
+    </section>
+
+
+    <!-- =========================
+         本日受取済み
+    ========================== -->
+    <section id="locked-screen" class="screen">
+
+      <p class="screen-label">
+        CLOSED
+      </p>
+
+      <h2>本日の依頼は受取済みです。</h2>
+
+      <p class="description">
+        次の依頼は<br>
+        日本時間 0:00 以降に受け取れます。
+      </p>
+
+      <button id="locked-history-button" class="main-button">
+        受け取り履歴
+      </button>
+
+    </section>
+
+
+    <!-- =========================
+         履歴
+    ========================== -->
+    <section id="history-screen" class="screen">
+
+      <p class="screen-label">
+        REQUEST LOG
+      </p>
+
+      <h2>受け取り履歴</h2>
+
+      <div id="history-list">
+      </div>
+
+      <button id="back-button" class="main-button">
+        BACK
+      </button>
+
+    </section>
+
+  </main>
+
+
+  <!-- 依頼データ -->
+  <script src="data.js"></script>
+
+  <!-- システム -->
+  <script src="script.js"></script>
+
+</body>
+</html>
